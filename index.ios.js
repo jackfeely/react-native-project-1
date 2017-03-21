@@ -59,15 +59,15 @@
 // MY CODE
 
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import { AppRegistry, StyleSheet, Text, TextInput, View, Button, Image, ListView } from 'react-native';
+// posterr API key: 8cd0440c
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-
   text: {
     borderColor: 'black',
     borderWidth: 2,
@@ -83,14 +83,17 @@ class ReactNativeProject1 extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      movie: '',
-      isLoading: false,
-      year: ''
+      title: '',
+      year: '',
+      search: '',
+      results: [],
+      poster: false,
+      isLoading: false
     };
   }
 
   _executeQuery(query) {
-    console.log(query);
+    // console.log(query);
     this.setState({ isLoading: true });
     fetch(query)
       .then(response => response.json())
@@ -104,20 +107,26 @@ class ReactNativeProject1 extends Component {
   }
 
   _handleResponse(response) {
+    console.log(response);
+    console.log(response.Search[0]);
     this.setState({
-      year: response.Year
+      title: response.Search[0].Title,
+      year: response.Search[0].Year,
+      poster: response.Search[0].Poster
     })
   }
 
-  getMovieTitle(title){
+  getMovieTitle(thisSearch){
     this.setState({
-      movie: title
+      search: thisSearch
     });
   }
 
   _findMovie(){
     this.setState({ isLoading: true });
-    var query = `https://www.omdbapi.com/?t=${this.state.movie}`;
+    // `https://img.omdbapi.com/?apikey=8cd0440c&`;
+    // t=${this.state.search}
+    var query = `https://www.omdbapi.com/?s=${this.state.search}`;
     fetch(query)
       .then(response => response.json())
       .then(json => this._handleResponse(json))
@@ -130,25 +139,46 @@ class ReactNativeProject1 extends Component {
   }
 
   render() {
-    let thing = this.state.year;
-    return (
-      <View style={styles.container}>
-        <Text>Hello world!</Text>
-        <TextInput
-          style={styles.text}
-          onChangeText={(text) => this.getMovieTitle(text)}
-          placeholder='please work'
-        />
-        <Button
-          title='Find movie'
-          onPress={this._findMovie.bind(this)}
-        />
-        <Text>
-          {thing}
-        </Text>
-      </View>
-    );
+    let title = this.state.title;
+    let year = this.state.year;
+    let poster = this.state.poster;
+    let results = this.state.results;
+    if (poster) {
+      return (
+        <View style={styles.container}>
+          <TextInput
+            style={styles.text}
+            onChangeText={(text) => this.getMovieTitle(text)}
+            placeholder='Search for a movie' />
+          <Button
+            title='Find movie'
+            onPress={this._findMovie.bind(this)} />
+          <Text>{title}</Text>
+          <Text>{year}</Text>
+          <Image
+            source={{uri: poster}}
+            style={{width:150, height: 232.5}} />
+        </View>
+      );
+    }
+    else {
+      return (
+        <View style={styles.container}>
+          <TextInput
+            style={styles.text}
+            onChangeText={(text) => this.getMovieTitle(text)}
+            placeholder='Search for a movie' />
+          <Button
+            title='Find movie'
+            onPress={this._findMovie.bind(this)} />
+        </View>
+      );
+    }
   }
 }
+
+          // <ListView
+          //   dataSource={this.state.results}
+          //   renderRow={(rowData) => <Text>{rowData}</Text> />
 
 AppRegistry.registerComponent('ReactNativeProject1', () => ReactNativeProject1);
