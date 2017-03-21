@@ -60,7 +60,7 @@
 
 import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Text, TextInput, View, Button, Image, ListView } from 'react-native';
-// posterr API key: 8cd0440c
+// poster API key: 8cd0440c
 
 const styles = StyleSheet.create({
   container: {
@@ -82,54 +82,45 @@ class ReactNativeProject1 extends Component {
 
   constructor(props) {
     super(props);
+    const searchResults = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       title: '',
       year: '',
       search: '',
-      results: [],
+      results: searchResults.cloneWithRows(['row 1', 'row 2']),
       poster: false,
       isLoading: false
     };
   }
 
-  _executeQuery(query) {
-    // console.log(query);
-    this.setState({ isLoading: true });
-    fetch(query)
-      .then(response => response.json())
-      .then(json => this._handleResponse(json.response))
-      .catch(error =>
-        this.setState({
-          isLoading: false,
-          message: 'OOPSIE DAISY' + error
-        })
-      );
-  }
-
-  _handleResponse(response) {
+  _handleListResponse(response) {
     console.log(response);
-    console.log(response.Search[0]);
-    this.setState({
-      title: response.Search[0].Title,
-      year: response.Search[0].Year,
-      poster: response.Search[0].Poster
-    })
-  }
-
-  getMovieTitle(thisSearch){
-    this.setState({
-      search: thisSearch
+    theseResults = [];
+    response.Search.forEach(function(movie) {
+      // let thisMovie = {
+      //   title: movie.Title,
+      //   year: movie.Year,
+      //   poster: movie.Poster
+      // };
+      let thisMovie = movie.Title;
+      theseResults.push(thisMovie);
     });
+
+    let testSearchResults = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    let thisThang = testSearchResults.cloneWithRows(theseResults);
+    this.setState({ results: thisThang });
   }
 
-  _findMovie(){
-    this.setState({ isLoading: true });
-    // `https://img.omdbapi.com/?apikey=8cd0440c&`;
-    // t=${this.state.search}
-    var query = `https://www.omdbapi.com/?s=${this.state.search}`;
+  _getSearchResults(searchText){
+    console.log(searchText)
+    this.setState({
+      search: searchText
+      // isLoading: true
+    });
+    let query = `https://www.omdbapi.com/?s=${this.state.search}`;
     fetch(query)
       .then(response => response.json())
-      .then(json => this._handleResponse(json))
+      .then(json => this._handleListResponse(json))
       .catch(error =>
         this.setState({
           isLoading: false,
@@ -139,24 +130,17 @@ class ReactNativeProject1 extends Component {
   }
 
   render() {
-    let title = this.state.title;
-    let year = this.state.year;
-    let poster = this.state.poster;
-    let results = this.state.results;
-    if (poster) {
+    if (this.state.poster) {
       return (
         <View style={styles.container}>
           <TextInput
             style={styles.text}
-            onChangeText={(text) => this.getMovieTitle(text)}
+            onChangeText={(text) => this._getSearchResults(text)}
             placeholder='Search for a movie' />
-          <Button
-            title='Find movie'
-            onPress={this._findMovie.bind(this)} />
-          <Text>{title}</Text>
-          <Text>{year}</Text>
+          <Text>{this.state.title}</Text>
+          <Text>{this.state.year}</Text>
           <Image
-            source={{uri: poster}}
+            source={{uri: this.state.poster}}
             style={{width:150, height: 232.5}} />
         </View>
       );
@@ -166,11 +150,11 @@ class ReactNativeProject1 extends Component {
         <View style={styles.container}>
           <TextInput
             style={styles.text}
-            onChangeText={(text) => this.getMovieTitle(text)}
+            onChangeText={(text) => this._getSearchResults(text)}
             placeholder='Search for a movie' />
-          <Button
-            title='Find movie'
-            onPress={this._findMovie.bind(this)} />
+          <ListView
+            dataSource={this.state.results}
+            renderRow={(rowData) => <Text>{rowData}</Text>} />
         </View>
       );
     }
