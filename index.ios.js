@@ -87,7 +87,8 @@ class ReactNativeProject1 extends Component {
       title: '',
       year: '',
       search: '',
-      results: searchResults.cloneWithRows(['row 1', 'row 2']),
+      // results: searchResults.cloneWithRows(['row 1', 'row 2']),
+      results: [],
       poster: false,
       isLoading: false
     };
@@ -97,18 +98,31 @@ class ReactNativeProject1 extends Component {
     console.log(response);
     theseResults = [];
     response.Search.forEach(function(movie) {
-      // let thisMovie = {
-      //   title: movie.Title,
-      //   year: movie.Year,
-      //   poster: movie.Poster
-      // };
-      let thisMovie = movie.Title;
+      let thisMovie = {
+        title: movie.Title,
+        year: movie.Year,
+        poster: movie.Poster
+      };
       theseResults.push(thisMovie);
     });
 
-    let testSearchResults = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    let thisThang = testSearchResults.cloneWithRows(theseResults);
-    this.setState({ results: thisThang });
+    // let testSearchResults = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.setState({ results: theseResults });
+  }
+
+  createMovieObj() {
+    // var array = [{title: 1, year: 2}, {title: 3, year: 4}];
+
+    return this.state.results.slice(0, 2).map(function(movie, i){
+      return(
+        <View key={i}>
+          <Text>{movie.title} ({movie.year})</Text>
+          <Image
+            source={{uri: movie.poster}}
+            style={{width: 30, height: 46.5}} />
+        </View>
+      );
+    });
   }
 
   _getSearchResults(searchText){
@@ -141,7 +155,7 @@ class ReactNativeProject1 extends Component {
           <Text>{this.state.year}</Text>
           <Image
             source={{uri: this.state.poster}}
-            style={{width:150, height: 232.5}} />
+            style={{width: 300, height: 465}} />
         </View>
       );
     }
@@ -152,13 +166,14 @@ class ReactNativeProject1 extends Component {
             style={styles.text}
             onChangeText={(text) => this._getSearchResults(text)}
             placeholder='Search for a movie' />
-          <ListView
-            dataSource={this.state.results}
-            renderRow={(rowData) => <Text>{rowData}</Text>} />
+          <View>
+            {this.createMovieObj()}
+          </View>
         </View>
       );
     }
   }
+
 }
 
           // <ListView
